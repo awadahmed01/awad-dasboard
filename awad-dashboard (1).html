@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⬡ AWAD.SYS // NEXUS</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&family=Orbitron:wght@400;700;900&family=Black+Ops+One&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --cyan:    #00f5ff;
+    --magenta: #ff006e;
+    --green:   #39ff14;
+    --yellow:  #ffe600;
+    --violet:  #b44aff;
+    --bg:      #020810;
+    --panel:   rgba(4,16,32,0.82);
+    --border:  rgba(0,245,255,0.13);
+    --text:    #c8e8f0;
+    --dim:     #3d6070;
+    --glow-c:  0 0 10px rgba(0,245,255,0.55), 0 0 30px rgba(0,245,255,0.18);
+    --glow-m:  0 0 10px rgba(255,0,110,0.55),  0 0 30px rgba(255,0,110,0.18);
+    --glow-g:  0 0 10px rgba(57,255,20,0.55),  0 0 30px rgba(57,255,20,0.18);
+    --glow-v:  0 0 10px rgba(180,74,255,0.55), 0 0 30px rgba(180,74,255,0.18);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    min-height:100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── BACKGROUND LAYERS ── */
+  .bg-grid {
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 80% 55% at 50% -5%,  rgba(0,245,255,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 45% 40% at 95% 95%,  rgba(255,0,110,0.05) 0%, transparent 55%),
+      radial-gradient(ellipse 35% 35% at 5%  80%,  rgba(180,74,255,0.04) 0%, transparent 55%),
+      repeating-linear-gradient(0deg,  transparent, transparent 59px, rgba(0,245,255,0.026) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(0,245,255,0.026) 60px);
+  }
+  .bg-scanlines {
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background: repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,0,0,0.12) 3px,rgba(0,0,0,0.12) 4px);
+    animation: scan 10s linear infinite;
+  }
+  @keyframes scan { to { background-position:0 120px; } }
+  .bg-noise {
+    position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.025;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:256px 256px;
+  }
+
+  /* ── NEON STRIP — fixed top ── */
+  .neon-strip-top {
+    position:fixed; top:0; left:0; right:0; height:3px; z-index:9999; pointer-events:none;
+    background: linear-gradient(90deg,
+      transparent 0%, var(--violet) 8%, var(--cyan) 25%,
+      var(--cyan) 50%, var(--magenta) 72%, var(--violet) 92%, transparent 100%);
+    box-shadow: 0 0 14px 4px rgba(0,245,255,0.5), 0 0 40px 8px rgba(0,245,255,0.15);
+    animation: strip-pulse 4s ease-in-out infinite;
+  }
+  @keyframes strip-pulse {
+    0%,100% { opacity:1; }
+    50%      { opacity:0.7; filter:brightness(1.5); }
+  }
+
+  /* ── NEON STRIP — below topbar ── */
+  .neon-strip-bar {
+    height:2px; width:100%;
+    background: linear-gradient(90deg, var(--magenta), var(--cyan), var(--violet), var(--cyan), var(--magenta));
+    background-size:300% 100%;
+    box-shadow: 0 0 10px 2px rgba(0,245,255,0.35), 0 2px 20px rgba(0,245,255,0.1);
+    animation: strip-slide 5s linear infinite;
+  }
+  @keyframes strip-slide { to { background-position:300% 0; } }
+
+  /* ── APP WRAPPER ── */
+  #app { position:relative; z-index:10; min-height:100vh; padding-top:3px; }
+
+  /* ══════════════════════
+     LOGIN
+  ══════════════════════ */
+  #login-screen {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100vh; padding:3rem 1.5rem;
+    animation: fadeIn 0.9s ease;
+  }
+
+  .brand-block { text-align:center; margin-bottom:3.5rem; }
+
+  .brand-eyebrow {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.6rem; font-weight:500;
+    letter-spacing:0.55em; color:var(--dim);
+    text-transform:uppercase; margin-bottom:1.2rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem;
+  }
+  .brand-eyebrow::before, .brand-eyebrow::after {
+    content:''; display:inline-block;
+    width:60px; height:1px;
+    background:linear-gradient(90deg, transparent, var(--dim));
+    opacity:0.4;
+  }
+  .brand-eyebrow::after { background:linear-gradient(90deg, var(--dim), transparent); }
+
+  /* Glitch logo */
+  .logo-main {
+    position:relative; display:inline-block;
+    font-family:'Black Ops One','Orbitron',sans-serif;
+    font-size: clamp(4.5rem, 15vw, 9.5rem);
+    color: var(--cyan);
+    text-shadow: var(--glow-c);
+    letter-spacing:0.2em; line-height:1;
+    animation: logo-glitch 4s infinite;
+    user-select:none;
+  }
+  .logo-main::before {
+    content:attr(data-text); position:absolute; top:0; left:0;
+    font-family:'Black Ops One','Orbitron',sans-serif;
+    font-size:inherit; letter-spacing:inherit; color:var(--magenta);
+    clip-path:polygon(0 18%,100% 18%,100% 42%,0 42%);
+    animation:gl1 4s infinite; opacity:0;
+  }
+  .logo-main::after {
+    content:attr(data-text); position:absolute; top:0; left:0;
+    font-family:'Black Ops One','Orbitron',sans-serif;
+    font-size:inherit; letter-spacing:inherit; color:var(--violet);
+    clip-path:polygon(0 62%,100% 62%,100% 80%,0 80%);
+    animation:gl2 4s infinite; opacity:0;
+  }
+  @keyframes logo-glitch {
+    0%,88%,100% { transform:none; }
+    90% { transform:skewX(-1.5deg) translateX(3px); }
+    92% { transform:skewX(1deg)    translateX(-2px); }
+    94% { transform:none; }
+  }
+  @keyframes gl1 {
+    0%,88%,100% { opacity:0; transform:none; }
+    90% { opacity:0.9; transform:translateX(-5px); }
+    93% { opacity:0.4; transform:translateX(5px); }
+    95% { opacity:0; }
+  }
+  @keyframes gl2 {
+    0%,88%,100% { opacity:0; transform:none; }
+    91% { opacity:0.8; transform:translateX(4px); }
+    94% { opacity:0.3; transform:translateX(-4px); }
+    96% { opacity:0; }
+  }
+
+  .logo-ornament {
+    display:flex; align-items:center; justify-content:center; gap:0.9rem;
+    margin-top:0.9rem;
+  }
+  .orn-line { flex:1; max-width:110px; height:1px; background:linear-gradient(90deg,transparent,rgba(0,245,255,0.5),transparent); }
+  .orn-diamond { width:9px; height:9px; background:var(--cyan); transform:rotate(45deg); box-shadow:var(--glow-c); }
+
+  .brand-tag {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.75rem; font-weight:300;
+    letter-spacing:0.5em; color:var(--dim);
+    text-transform:uppercase; margin-top:0.9rem;
+  }
+  .brand-tag b { color:var(--magenta); font-weight:500; }
+
+  /* Login card */
+  .login-card {
+    width:100%; max-width:450px;
+    background: linear-gradient(150deg, rgba(0,28,50,0.88), rgba(2,6,18,0.94));
+    border: 1px solid rgba(0,245,255,0.13);
+    border-top:none;
+    backdrop-filter:blur(28px);
+    clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));
+    box-shadow: 0 0 60px rgba(0,245,255,0.05), 0 28px 80px rgba(0,0,0,0.55);
+  }
+  .card-neo-strip {
+    height:2px;
+    background: linear-gradient(90deg, var(--violet), var(--cyan) 40%, var(--magenta) 70%, var(--violet));
+    box-shadow: 0 0 16px rgba(0,245,255,0.55), 0 0 40px rgba(0,245,255,0.15);
+  }
+  .card-inner { padding:2rem 2.5rem 2.5rem; }
+
+  .card-hdr {
+    display:flex; align-items:center; gap:0.6rem; margin-bottom:2rem;
+  }
+  .card-hdr-dot { width:6px; height:6px; background:var(--cyan); box-shadow:var(--glow-c); transform:rotate(45deg); }
+  .card-hdr-label {
+    font-family:'Rajdhani',sans-serif; font-size:0.6rem; font-weight:700;
+    letter-spacing:0.4em; color:var(--cyan); text-transform:uppercase;
+  }
+  .card-hdr-rule { flex:1; height:1px; background:var(--border); }
+
+  .input-group { margin-bottom:1.4rem; }
+  .input-label {
+    display:block; font-size:0.56rem; letter-spacing:0.28em;
+    color:var(--dim); margin-bottom:0.5rem; text-transform:uppercase;
+  }
+  .input-wrap { position:relative; }
+  .input-bar {
+    position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:linear-gradient(180deg,var(--cyan),var(--violet));
+    box-shadow:2px 0 8px rgba(0,245,255,0.3);
+  }
+  .cyber-input {
+    width:100%; padding:0.78rem 1rem 0.78rem 1.2rem;
+    background:rgba(0,245,255,0.03);
+    border:1px solid rgba(0,245,255,0.13); border-left:none;
+    color:var(--text); font-family:'Share Tech Mono',monospace;
+    font-size:0.88rem; outline:none; transition:all 0.25s;
+  }
+  .cyber-input:focus {
+    background:rgba(0,245,255,0.07);
+    border-color:rgba(0,245,255,0.38);
+    box-shadow:0 0 20px rgba(0,245,255,0.09);
+  }
+  .cyber-input::placeholder { color:rgba(61,96,112,0.55); }
+
+  .btn-oauth {
+    width:100%; padding:0.92rem;
+    background:linear-gradient(135deg,rgba(0,245,255,0.07),rgba(180,74,255,0.07),rgba(255,0,110,0.07));
+    border:1px solid rgba(0,245,255,0.32);
+    color:var(--cyan); font-family:'Orbitron',sans-serif;
+    font-size:0.72rem; font-weight:700;
+    letter-spacing:0.22em; text-transform:uppercase;
+    cursor:pointer; transition:all 0.28s;
+    clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+    position:relative; overflow:hidden; margin-top:0.3rem;
+  }
+  .btn-oauth:hover {
+    background:linear-gradient(135deg,rgba(0,245,255,0.15),rgba(180,74,255,0.12),rgba(255,0,110,0.12));
+    border-color:var(--cyan); color:#fff;
+    box-shadow:var(--glow-c), inset 0 0 20px rgba(0,245,255,0.04);
+    transform:translateY(-2px);
+  }
+  .btn-oauth::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(0,245,255,0.16),transparent);
+    transform:translateX(-100%); transition:transform 0.5s;
+  }
+  .btn-oauth:hover::before { transform:translateX(100%); }
+
+  .login-meta {
+    margin-top:1.5rem; padding-top:1.2rem;
+    border-top:1px solid rgba(0,245,255,0.07);
+    display:grid; grid-template-columns:1fr 1fr; gap:0.45rem;
+  }
+  .meta-row {
+    display:flex; align-items:center; gap:0.45rem;
+    font-size:0.56rem; color:var(--dim); letter-spacing:0.05em;
+  }
+  .meta-row::before { content:'▸'; color:var(--cyan); font-size:0.5rem; flex-shrink:0; }
+
+  /* ══════════════════════
+     DASHBOARD
+  ══════════════════════ */
+  #dashboard { display:none; flex-direction:column; min-height:100vh; }
+
+  /* TOPBAR */
+  .topbar {
+    background:rgba(2,5,12,0.97);
+    backdrop-filter:blur(20px);
+    position:sticky; top:3px; z-index:200;
+  }
+  .topbar-inner {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.72rem 2rem;
+  }
+
+  .topbar-brand { display:flex; align-items:center; gap:1rem; }
+  .tb-logo {
+    font-family:'Black Ops One','Orbitron',sans-serif;
+    font-size:1.55rem; color:var(--cyan);
+    text-shadow:var(--glow-c); letter-spacing:0.15em;
+    position:relative; animation:logo-glitch 9s infinite;
+  }
+  .tb-logo::before {
+    content:attr(data-text); position:absolute; top:0; left:0;
+    font-family:'Black Ops One','Orbitron',sans-serif;
+    color:var(--magenta); opacity:0;
+    clip-path:polygon(0 25%,100% 25%,100% 50%,0 50%);
+    animation:gl1 9s infinite;
+  }
+  .tb-logo::after {
+    content:attr(data-text); position:absolute; top:0; left:0;
+    font-family:'Black Ops One','Orbitron',sans-serif;
+    color:var(--violet); opacity:0;
+    clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);
+    animation:gl2 9s infinite;
+  }
+  .tb-meta {
+    border-left:1px solid var(--border); padding-left:0.9rem;
+    font-size:0.52rem; color:var(--dim); letter-spacing:0.2em; line-height:1.6;
+  }
+  .tb-meta b { color:var(--cyan); font-weight:400; }
+
+  .tb-center {
+    display:flex; align-items:center; gap:0.5rem;
+    font-size:0.58rem; color:var(--dim); letter-spacing:0.16em;
+  }
+  .ping { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:var(--glow-g); animation:pulse-anim 2s ease-in-out infinite; }
+
+  .tb-right { display:flex; align-items:center; gap:1.1rem; }
+  .user-email-tb { font-size:0.6rem; color:var(--dim); letter-spacing:0.04em; }
+  .user-avatar {
+    width:36px; height:36px; border-radius:50%;
+    border:2px solid transparent;
+    background:linear-gradient(var(--bg),var(--bg)) padding-box,
+               linear-gradient(135deg,var(--cyan),var(--magenta)) border-box;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif; font-size:0.8rem; font-weight:700; color:var(--cyan);
+    overflow:hidden; box-shadow:var(--glow-c);
+  }
+  .user-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+  .btn-signout {
+    padding:0.34rem 0.9rem;
+    background:transparent; border:1px solid rgba(255,0,110,0.35);
+    color:var(--magenta); font-family:'Share Tech Mono',monospace;
+    font-size:0.58rem; letter-spacing:0.12em; cursor:pointer; transition:all 0.2s;
+    clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));
+  }
+  .btn-signout:hover { background:rgba(255,0,110,0.1); box-shadow:var(--glow-m); color:#fff; }
+
+  /* STATUS BAR */
+  .status-bar {
+    display:flex; font-size:0.57rem; color:var(--dim); letter-spacing:0.13em;
+    background:rgba(0,245,255,0.018); border-bottom:1px solid rgba(0,245,255,0.055);
+  }
+  .sb-item {
+    padding:0.28rem 1.3rem; border-right:1px solid rgba(0,245,255,0.06);
+    display:flex; align-items:center; gap:0.4rem; white-space:nowrap;
+  }
+  .sb-item:first-child { padding-left:2rem; }
+  .sb-item:last-child  { flex:1; }
+  .sb-v { color:var(--cyan); }
+
+  /* GRID */
+  .dash-grid {
+    display:grid; grid-template-columns:265px 1fr 265px;
+    gap:1rem; padding:1rem 1.5rem 2rem; flex:1; align-items:start;
+  }
+  @media(max-width:1100px){
+    .dash-grid { grid-template-columns:1fr 1fr; }
+    .col-right  { grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  }
+  @media(max-width:700px){
+    .dash-grid { grid-template-columns:1fr; }
+    .col-right  { grid-template-columns:1fr; }
+  }
+  .col-left, .col-mid, .col-right { display:flex; flex-direction:column; gap:1rem; }
+
+  /* ── PANEL ── */
+  .panel {
+    background:var(--panel);
+    border:1px solid var(--border);
+    backdrop-filter:blur(20px);
+    position:relative; overflow:hidden;
+    transition:box-shadow 0.3s, border-color 0.3s;
+    animation:panelIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
+  }
+
+  /* Neon top edge per panel */
+  .panel::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px; z-index:1;
+    background:linear-gradient(90deg,var(--cyan),var(--violet) 50%,transparent 100%);
+    opacity:0.65;
+  }
+  .panel.acc-mg::before     { background:linear-gradient(90deg,var(--magenta),var(--violet) 50%,transparent); }
+  .panel.acc-green::before  { background:linear-gradient(90deg,var(--green),var(--cyan) 50%,transparent); }
+  .panel.acc-yellow::before { background:linear-gradient(90deg,var(--yellow),var(--green) 50%,transparent); }
+  .panel.acc-violet::before { background:linear-gradient(90deg,var(--violet),var(--cyan) 50%,transparent); }
+
+  /* Corner accent */
+  .panel::after {
+    content:''; position:absolute; top:0; right:0; width:0; height:0;
+    border-top:16px solid rgba(0,245,255,0.18);
+    border-left:16px solid transparent;
+  }
+
+  .panel:hover { box-shadow:0 0 30px rgba(0,245,255,0.07), 0 10px 40px rgba(0,0,0,0.4); border-color:rgba(0,245,255,0.22); }
+
+  @keyframes panelIn {
+    from { opacity:0; transform:translateY(18px) scale(0.985); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .col-left  .panel:nth-child(1){animation-delay:0.04s}
+  .col-left  .panel:nth-child(2){animation-delay:0.11s}
+  .col-left  .panel:nth-child(3){animation-delay:0.18s}
+  .col-mid   .panel:nth-child(1){animation-delay:0.07s}
+  .col-mid   .panel:nth-child(2){animation-delay:0.14s}
+  .col-mid   .panel:nth-child(3){animation-delay:0.21s}
+  .col-right .panel:nth-child(1){animation-delay:0.09s}
+  .col-right .panel:nth-child(2){animation-delay:0.16s}
+  .col-right .panel:nth-child(3){animation-delay:0.23s}
+
+  .panel-hdr {
+    display:flex; align-items:center; gap:0.7rem;
+    padding:0.72rem 1.2rem 0.65rem;
+    border-bottom:1px solid rgba(0,245,255,0.07);
+  }
+  .ph-bar { width:3px; height:14px; background:linear-gradient(180deg,var(--cyan),transparent); box-shadow:0 0 6px var(--cyan); }
+  .panel.acc-mg     .ph-bar { background:linear-gradient(180deg,var(--magenta),transparent); box-shadow:0 0 6px var(--magenta); }
+  .panel.acc-green  .ph-bar { background:linear-gradient(180deg,var(--green),transparent);   box-shadow:0 0 6px var(--green); }
+  .panel.acc-yellow .ph-bar { background:linear-gradient(180deg,var(--yellow),transparent);  box-shadow:0 0 6px var(--yellow); }
+  .panel.acc-violet .ph-bar { background:linear-gradient(180deg,var(--violet),transparent);  box-shadow:0 0 6px var(--violet); }
+
+  .panel-title {
+    font-family:'Rajdhani',sans-serif; font-size:0.6rem; font-weight:700;
+    letter-spacing:0.32em; text-transform:uppercase; color:var(--cyan); flex:1;
+  }
+  .panel.acc-mg     .panel-title { color:var(--magenta); }
+  .panel.acc-green  .panel-title { color:var(--green); }
+  .panel.acc-yellow .panel-title { color:var(--yellow); }
+  .panel.acc-violet .panel-title { color:var(--violet); }
+
+  .panel-badge {
+    font-size:0.5rem; padding:0.1rem 0.48rem;
+    background:rgba(0,245,255,0.07); border:1px solid rgba(0,245,255,0.22);
+    color:var(--cyan); letter-spacing:0.1em;
+  }
+  .panel-body { padding:1.1rem 1.2rem; }
+
+  /* ── CLOCK ── */
+  .clock-display { text-align:center; padding:0.8rem 0 0.3rem; }
+  .clock-time {
+    font-family:'Orbitron',sans-serif; font-size:3rem; font-weight:700;
+    color:var(--cyan); text-shadow:var(--glow-c);
+    letter-spacing:0.04em; line-height:1; font-variant-numeric:tabular-nums;
+  }
+  .clock-colon { animation:colon-blink 1s step-start infinite; }
+  @keyframes colon-blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+  .clock-date { font-size:0.63rem; color:var(--dim); letter-spacing:0.2em; margin-top:0.55rem; }
+  .clock-day  { font-family:'Rajdhani',sans-serif; font-size:0.75rem; font-weight:700; letter-spacing:0.44em; color:var(--magenta); margin-top:0.15rem; text-transform:uppercase; }
+  .clock-rule { height:1px; margin:0.9rem 2rem 0; background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:0.18; }
+
+  /* ── WEATHER ── */
+  .weather-main { display:flex; align-items:center; gap:1.2rem; margin-bottom:1rem; }
+  .w-icon { font-size:2.8rem; filter:drop-shadow(0 0 8px rgba(255,230,0,0.4)); }
+  .w-temp { font-family:'Orbitron',sans-serif; font-size:2.2rem; font-weight:700; color:var(--yellow); text-shadow:0 0 14px rgba(255,230,0,0.5); line-height:1; }
+  .w-desc { font-size:0.63rem; color:var(--dim); letter-spacing:0.1em; margin-top:0.18rem; }
+  .w-city { font-size:0.58rem; color:var(--cyan); margin-top:0.08rem; }
+  .w-stats { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:rgba(0,0,0,0.2); padding:0.6rem 0.8rem; border:1px solid rgba(0,245,255,0.06); }
+  .ws { font-size:0.58rem; color:var(--dim); }
+  .ws span { color:var(--text); display:block; font-size:0.7rem; margin-top:0.1rem; }
+
+  /* ── CALENDAR ── */
+  .cal-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; }
+  .cal-btn {
+    background:transparent; border:1px solid rgba(0,245,255,0.14);
+    color:var(--cyan); cursor:pointer; padding:0.2rem 0.6rem;
+    font-family:'Share Tech Mono',monospace; font-size:0.7rem; transition:all 0.2s;
+  }
+  .cal-btn:hover { border-color:var(--cyan); box-shadow:var(--glow-c); }
+  .cal-month { font-family:'Orbitron',sans-serif; font-size:0.67rem; font-weight:700; color:var(--cyan); letter-spacing:0.2em; }
+  .cal-grid  { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; font-size:0.56rem; text-align:center; }
+  .cal-head  { color:var(--magenta); font-weight:700; padding:0.25rem; letter-spacing:0.04em; }
+  .cal-day   { padding:0.32rem 0; border-radius:2px; color:var(--dim); cursor:default; transition:all 0.15s; position:relative; }
+  .cal-day:not(.empty):hover { background:rgba(0,245,255,0.1); color:var(--text); }
+  .cal-day.today { background:rgba(0,245,255,0.12); color:var(--cyan); font-weight:bold; box-shadow:inset 0 0 0 1px rgba(0,245,255,0.45); }
+  .cal-day.has-event::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:3px; height:3px; border-radius:50%; background:var(--magenta); box-shadow:0 0 4px var(--magenta); }
+
+  /* ── EVENTS ── */
+  .event-item { display:flex; gap:0.8rem; align-items:flex-start; padding:0.55rem 0; border-bottom:1px solid rgba(0,245,255,0.055); transition:background 0.15s; }
+  .event-item:last-child { border-bottom:none; }
+  .event-item:hover { background:rgba(0,245,255,0.025); }
+  .ev-dot  { width:7px; height:7px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+  .ev-time { font-size:0.57rem; color:var(--magenta); min-width:44px; padding-top:2px; letter-spacing:0.05em; }
+  .ev-name { font-size:0.72rem; color:var(--text); }
+  .ev-cal  { font-size:0.5rem; color:var(--dim); letter-spacing:0.08em; margin-top:1px; }
+  .no-events { font-size:0.65rem; color:var(--dim); text-align:center; padding:1.2rem 0; }
+
+  /* ── COURSES ── */
+  .course-item {
+    display:flex; align-items:center; gap:0.8rem;
+    padding:0.65rem 0.9rem; margin-bottom:0.48rem;
+    background:rgba(0,245,255,0.022); border:1px solid rgba(0,245,255,0.08);
+    border-left:2px solid var(--cyan);
+    cursor:pointer; transition:all 0.22s;
+    clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
+    position:relative; overflow:hidden;
+  }
+  .course-item::after { content:''; position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(0,245,255,0.05); transition:width 0.3s; }
+  .course-item:hover::after { width:100%; }
+  .course-item:hover { transform:translateX(4px); border-left-color:var(--cyan); }
+  .c-dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .c-name  { font-size:0.72rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .c-teach { font-size:0.57rem; color:var(--dim); margin-top:1px; }
+  .c-badge { margin-left:auto; font-size:0.49rem; padding:0.1rem 0.4rem; background:rgba(57,255,20,0.09); border:1px solid rgba(57,255,20,0.24); color:var(--green); white-space:nowrap; flex-shrink:0; }
+
+  /* ── ASSIGNMENTS ── */
+  .assign-item { padding:0.58rem 0; border-bottom:1px solid rgba(0,245,255,0.055); display:flex; gap:0.8rem; align-items:flex-start; }
+  .assign-item:last-child { border-bottom:none; }
+  .a-led   { width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+  .a-led.due   { background:var(--magenta); box-shadow:0 0 8px var(--magenta); }
+  .a-led.done  { background:var(--green);   box-shadow:0 0 8px var(--green); }
+  .a-led.later { background:var(--yellow);  box-shadow:0 0 8px var(--yellow); animation:pulse-anim 2s infinite; }
+  .a-title  { font-size:0.71rem; color:var(--text); }
+  .a-due    { font-size:0.57rem; color:var(--magenta); letter-spacing:0.06em; margin-top:2px; }
+  .a-course { font-size:0.5rem; color:var(--dim); }
+
+  /* ── NOTES ── */
+  .notes-area {
+    width:100%; min-height:110px;
+    background:rgba(0,0,0,0.3); border:1px solid rgba(57,255,20,0.11);
+    border-left:2px solid var(--green); color:var(--text);
+    font-family:'Share Tech Mono',monospace; font-size:0.77rem; line-height:1.7;
+    padding:0.8rem; resize:vertical; outline:none; transition:all 0.22s;
+  }
+  .notes-area:focus { box-shadow:0 0 18px rgba(57,255,20,0.1); border-color:rgba(57,255,20,0.32); }
+  .notes-footer { display:flex; justify-content:space-between; align-items:center; margin-top:0.55rem; }
+  .notes-hint { font-size:0.54rem; color:var(--dim); }
+  .btn-clear { background:transparent; border:1px solid rgba(255,0,110,0.28); color:var(--magenta); font-family:'Share Tech Mono',monospace; font-size:0.57rem; cursor:pointer; padding:0.22rem 0.6rem; letter-spacing:0.1em; transition:all 0.2s; }
+  .btn-clear:hover { background:rgba(255,0,110,0.08); box-shadow:var(--glow-m); }
+
+  /* ── STATS ── */
+  .stat-row  { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.38rem; }
+  .stat-lbl  { font-size:0.57rem; color:var(--dim); letter-spacing:0.1em; }
+  .stat-val  { font-size:0.59rem; color:var(--cyan); font-family:'Orbitron',sans-serif; }
+  .stat-bar  { height:2px; background:rgba(0,245,255,0.07); margin-bottom:0.7rem; overflow:hidden; }
+  .stat-fill { height:100%; background:linear-gradient(90deg,var(--cyan),var(--magenta)); transition:width 1.2s ease; }
+
+  /* ── QUOTE ── */
+  .quote-body { border-left:2px solid var(--violet); padding-left:1rem; margin:0.2rem 0 0.8rem; }
+  .quote-text { font-family:'Rajdhani',sans-serif; font-size:0.95rem; font-weight:300; line-height:1.7; color:var(--text); font-style:italic; }
+  .quote-author { font-size:0.57rem; color:var(--violet); letter-spacing:0.22em; text-align:right; margin-top:0.4rem; }
+
+  /* ── CONNECT BANNER ── */
+  .connect-banner { background:rgba(255,0,110,0.045); border:1px solid rgba(255,0,110,0.16); border-left:2px solid var(--magenta); padding:0.7rem 0.9rem; margin-bottom:0.8rem; font-size:0.63rem; color:var(--dim); line-height:1.7; }
+  .connect-banner b { color:var(--magenta); }
+
+  /* ── LOADING ── */
+  .loading { display:flex; align-items:center; gap:0.5rem; font-size:0.63rem; color:var(--dim); padding:1.2rem 0; }
+  .ld span { animation:blink 1.4s infinite; font-size:0.8rem; }
+  .ld span:nth-child(2){ animation-delay:0.2s; }
+  .ld span:nth-child(3){ animation-delay:0.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+
+  /* ── TAGS ── */
+  .tag { display:inline-block; font-size:0.51rem; padding:0.11rem 0.48rem; letter-spacing:0.13em; text-transform:uppercase; margin:0 0.22rem 0.22rem 0; }
+  .tg-c { background:rgba(0,245,255,0.07); border:1px solid rgba(0,245,255,0.22); color:var(--cyan); }
+  .tg-m { background:rgba(255,0,110,0.07); border:1px solid rgba(255,0,110,0.22); color:var(--magenta); }
+  .tg-g { background:rgba(57,255,20,0.07);  border:1px solid rgba(57,255,20,0.22);  color:var(--green); }
+  .tg-v { background:rgba(180,74,255,0.07); border:1px solid rgba(180,74,255,0.22); color:var(--violet); }
+
+  /* ── MISC ── */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:rgba(0,245,255,0.28); border-radius:2px; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .pulse { animation:pulse-anim 2s ease-in-out infinite; }
+  @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:0.35} }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="bg-noise"></div>
+<div class="neon-strip-top"></div>
+
+<div id="app">
+
+  <!-- ════════════════════════════ LOGIN ════════════════════════════ -->
+  <div id="login-screen">
+
+    <div class="brand-block">
+      <div class="brand-eyebrow">Neural Access Terminal</div>
+      <div class="logo-main" data-text="AWAD">AWAD</div>
+      <div class="logo-ornament">
+        <div class="orn-line"></div>
+        <div class="orn-diamond"></div>
+        <div class="orn-diamond" style="width:5px;height:5px;opacity:0.5;margin:0 -4px"></div>
+        <div class="orn-diamond"></div>
+        <div class="orn-line"></div>
+      </div>
+      <div class="brand-tag">NEXUS DASHBOARD &nbsp;·&nbsp; <b>SYSTEM v2.4.1</b></div>
+    </div>
+
+    <div class="login-card">
+      <div class="card-neo-strip"></div>
+      <div class="card-inner">
+        <div class="card-hdr">
+          <div class="card-hdr-dot"></div>
+          <div class="card-hdr-label">Authenticate Session</div>
+          <div class="card-hdr-rule"></div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="email-input">Access Credential</label>
+          <div class="input-wrap">
+            <div class="input-bar"></div>
+            <input class="cyber-input" type="email" id="email-input"
+              placeholder="Enter your email address"
+              autocomplete="email"/>
+          </div>
+        </div>
+
+        <button class="btn-oauth" onclick="initiateGoogleLogin()">
+          ⬡ &nbsp; Initiate Google OAuth
+        </button>
+
+        <div class="login-meta">
+          <div class="meta-row">OAuth 2.0 Secured</div>
+          <div class="meta-row">No external data storage</div>
+          <div class="meta-row">Google Classroom sync</div>
+          <div class="meta-row">Google Calendar sync</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════ DASHBOARD ════════════════════════════ -->
+  <div id="dashboard">
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="topbar-brand">
+          <div class="tb-logo" data-text="AWAD">AWAD</div>
+          <div class="tb-meta">
+            <b>NEXUS</b><br/>v2.4.1 DASHBOARD
+          </div>
+        </div>
+        <div class="tb-center">
+          <div class="ping"></div>
+          ALL SYSTEMS OPERATIONAL
+        </div>
+        <div class="tb-right">
+          <span class="user-email-tb" id="user-email-display"></span>
+          <div class="user-avatar" id="user-avatar">A</div>
+          <button class="btn-signout" onclick="signOut()">SIGN OUT</button>
+        </div>
+      </div>
+      <div class="neon-strip-bar"></div>
+    </div>
+
+    <div class="status-bar">
+      <div class="sb-item"><span class="sb-v" id="status-time">--:--:--</span></div>
+      <div class="sb-item">USER <span class="sb-v" id="sb-user">--</span></div>
+      <div class="sb-item">COURSES <span class="sb-v" id="sb-courses">--</span></div>
+      <div class="sb-item">PENDING <span class="sb-v" id="sb-pending">--</span></div>
+      <div class="sb-item">NEXT &nbsp;<span class="sb-v" id="sb-next-event">--</span></div>
+    </div>
+
+    <div class="dash-grid">
+
+      <!-- LEFT -->
+      <div class="col-left">
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">System Clock</span>
+          </div>
+          <div class="panel-body">
+            <div class="clock-display">
+              <div class="clock-time">
+                <span id="ct-h">00</span><span class="clock-colon">:</span><span id="ct-m">00</span><span class="clock-colon">:</span><span id="ct-s">00</span>
+              </div>
+              <div class="clock-date" id="clock-date">LOADING...</div>
+              <div class="clock-day"  id="clock-day">---</div>
+            </div>
+            <div class="clock-rule"></div>
+          </div>
+        </div>
+
+        <div class="panel acc-yellow">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Atmospheric Intel</span>
+          </div>
+          <div class="panel-body" id="weather-content">
+            <div class="loading">Uplink to weather grid <div class="ld"><span>.</span><span>.</span><span>.</span></div></div>
+          </div>
+        </div>
+
+        <div class="panel acc-green">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Scratchpad</span>
+          </div>
+          <div class="panel-body">
+            <textarea class="notes-area" id="notes-area"
+              placeholder="// Tactical notes...&#10;// Auto-saved to local storage"></textarea>
+            <div class="notes-footer">
+              <span class="notes-hint">// stored locally</span>
+              <button class="btn-clear" onclick="clearNotes()">PURGE</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MID -->
+      <div class="col-mid">
+
+        <div class="panel acc-mg">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Google Classroom</span>
+            <span class="panel-badge" id="course-count-badge">LOADING</span>
+          </div>
+          <div class="panel-body">
+            <div class="connect-banner" id="classroom-banner">
+              <b>// AWAITING AUTHENTICATION</b><br/>
+              Authenticate with Google to load your courses.
+            </div>
+            <div id="courses-list">
+              <div class="loading">Establishing connection <div class="ld"><span>.</span><span>.</span><span>.</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Assignment Queue</span>
+            <span class="panel-badge" id="assign-badge">0 PENDING</span>
+          </div>
+          <div class="panel-body" id="assignments-list">
+            <div class="loading">Fetching coursework <div class="ld"><span>.</span><span>.</span><span>.</span></div></div>
+          </div>
+        </div>
+
+        <div class="panel acc-violet">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Signal Intercept</span>
+          </div>
+          <div class="panel-body">
+            <div class="quote-body">
+              <div class="quote-text" id="quote-text">Initializing...</div>
+            </div>
+            <div class="quote-author" id="quote-author">---</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div class="col-right">
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Calendar Matrix</span>
+          </div>
+          <div class="panel-body">
+            <div class="cal-nav">
+              <button class="cal-btn" onclick="changeMonth(-1)">◀</button>
+              <div class="cal-month" id="cal-month-label">---</div>
+              <button class="cal-btn" onclick="changeMonth(1)">▶</button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+        </div>
+
+        <div class="panel acc-mg">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">Upcoming Events</span>
+            <span class="panel-badge" id="events-count-badge">0</span>
+          </div>
+          <div class="panel-body" id="events-list">
+            <div class="loading">Syncing calendar <div class="ld"><span>.</span><span>.</span><span>.</span></div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="ph-bar"></div>
+            <span class="panel-title">System Diagnostics</span>
+          </div>
+          <div class="panel-body">
+            <div class="stat-row"><span class="stat-lbl">CLASSROOM API</span><span class="stat-val" id="stat-classroom" style="color:var(--dim)">OFFLINE</span></div>
+            <div class="stat-bar"><div class="stat-fill" id="fill-classroom" style="width:0%"></div></div>
+            <div class="stat-row"><span class="stat-lbl">CALENDAR API</span><span class="stat-val" id="stat-calendar" style="color:var(--dim)">OFFLINE</span></div>
+            <div class="stat-bar"><div class="stat-fill" id="fill-calendar" style="width:0%"></div></div>
+            <div class="stat-row"><span class="stat-lbl">SESSION UPTIME</span><span class="stat-val" id="stat-session">00:00</span></div>
+            <div class="stat-bar"><div class="stat-fill" id="fill-session" style="width:5%;background:linear-gradient(90deg,var(--green),var(--yellow))"></div></div>
+            <div class="stat-row"><span class="stat-lbl">DATA STREAM</span><span class="stat-val pulse" style="color:var(--green)">LIVE</span></div>
+            <div class="stat-bar"><div class="stat-fill" style="width:100%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div></div>
+            <div style="margin-top:1rem;">
+              <span class="tag tg-c">AIR UNIVERSITY</span>
+              <span class="tag tg-m">CYBER SEC</span>
+              <span class="tag tg-g">SEM 4</span>
+              <span class="tag tg-v">CY-223</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════
+const CONFIG = {
+  CLIENT_ID: '1010549097195-8pgfapl740rosuu6schdpvj5jek6jpi8.apps.googleusercontent.com',
+  SCOPES: ['https://www.googleapis.com/auth/classroom.courses.readonly',
+           'https://www.googleapis.com/auth/classroom.coursework.me.readonly',
+           'https://www.googleapis.com/auth/calendar.readonly',
+           'profile','email'].join(' '),
+  ALLOWED_DOMAIN: 'students.au.edu.pk',
+};
+
+let accessToken = null, sessionStart = Date.now(), calViewDate = new Date(), calEvents = [];
+
+const QUOTES = [
+  ["The quieter you become, the more you are able to hear.","Rumi"],
+  ["Security is not a product, but a process.","Bruce Schneier"],
+  ["In the middle of difficulty lies opportunity.","Albert Einstein"],
+  ["The only way to do great work is to love what you do.","Steve Jobs"],
+  ["Every system can be hacked. The question is the cost.","Unknown"],
+  ["Knowledge is the only weapon that never runs out of ammunition.","Unknown"],
+  ["First, solve the problem. Then, write the code.","John Johnson"],
+  ["The hacker mindset doesn't see rules. Only systems.","Graeme Donald"],
+  ["Offense must inform defense.","NSA Principle"],
+  ["Move fast, understand deeply, break nothing important.","Unknown"],
+];
+
+// ── OAUTH ──
+function loadGSI() {
+  return new Promise((res,rej)=>{
+    if(document.getElementById('gsi')){res();return;}
+    const s=document.createElement('script');
+    s.id='gsi';s.src='https://accounts.google.com/gsi/client';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+}
+
+async function initiateGoogleLogin() {
+  const email=document.getElementById('email-input').value.trim();
+  if(CONFIG.ALLOWED_DOMAIN&&email&&!email.endsWith('@'+CONFIG.ALLOWED_DOMAIN)){
+    alert(`⚠ Only @${CONFIG.ALLOWED_DOMAIN} accounts are permitted.`); return;
+  }
+  if(CONFIG.CLIENT_ID==='YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com'){
+    showDemoMode(email||'user@airuni.edu.pk'); return;
+  }
+  try {
+    await loadGSI();
+    google.accounts.oauth2.initTokenClient({
+      client_id:CONFIG.CLIENT_ID, scope:CONFIG.SCOPES, hint:email,
+      callback:handleToken,
+    }).requestAccessToken();
+  } catch(e){ alert('Failed to load Google Sign-In. Check CLIENT_ID.'); }
+}
+
+async function handleToken(resp) {
+  if(resp.error){console.error(resp);return;}
+  accessToken=resp.access_token;
+  const p=await (await fetch('https://www.googleapis.com/oauth2/v2/userinfo',
+    {headers:{Authorization:'Bearer '+accessToken}})).json();
+  enterDashboard(p.email,p.name,p.picture);
+  loadClassroom(); loadCalendar();
+}
+
+function signOut(){
+  accessToken=null;
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ── DASHBOARD ──
+function enterDashboard(email,name,avatar){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('dashboard').style.display='flex';
+  document.getElementById('user-email-display').textContent=email;
+  document.getElementById('sb-user').textContent=(name||email.split('@')[0]).toUpperCase();
+  const av=document.getElementById('user-avatar');
+  if(avatar) av.innerHTML=`<img src="${avatar}" alt="av"/>`;
+  else av.textContent=(name||email)[0].toUpperCase();
+  loadNotes();loadWeather();loadQuote();renderCalendar();startClock();startSessionTimer();
+}
+
+function showDemoMode(email){
+  enterDashboard(email,email.split('@')[0],null);
+  renderCourses([
+    {id:'1',name:'Network Security (CY-223)',teacherGroupEmail:'Syeda Areeba Fatima',courseState:'ACTIVE'},
+    {id:'2',name:'Operating Systems (CS-301)',teacherGroupEmail:'Dr. Hassan Ali',courseState:'ACTIVE'},
+    {id:'3',name:'Cryptography (CY-211)',teacherGroupEmail:'Prof. Malik',courseState:'ACTIVE'},
+    {id:'4',name:'Web Security (CY-305)',teacherGroupEmail:'Dr. Fareeha',courseState:'ACTIVE'},
+  ]);
+  renderAssignments([
+    {title:'Lab Quiz 3 — Kali & OWASP Juice Shop',due:'2026-03-20',course:'Network Security',status:'due'},
+    {title:'VARE Assignment CLO-3 Nessus Scan',due:'2026-03-22',course:'Network Security',status:'due'},
+    {title:'Chapter 5 — RSA Homework',due:'2026-03-18',course:'Cryptography',status:'later'},
+    {title:'Midterm Project Submission',due:'2026-03-25',course:'Web Security',status:'due'},
+    {title:'Privilege Escalation Lab Report',due:'2026-03-19',course:'OS',status:'done'},
+  ]);
+  renderEvents([
+    {summary:'CY-223 Lecture',start:'09:00',cal:'University',color:'#00f5ff'},
+    {summary:'OS Lab Session',start:'11:00',cal:'University',color:'#ff006e'},
+    {summary:'Crypto Tutorial',start:'14:00',cal:'University',color:'#39ff14'},
+    {summary:'Study Group — Nmap',start:'17:00',cal:'Personal',color:'#ffe600'},
+  ]);
+  calEvents=[new Date().getDate(),new Date().getDate()+2,new Date().getDate()+5];
+  renderCalendar();
+  document.getElementById('classroom-banner').style.display='none';
+  document.getElementById('sb-courses').textContent=4;
+  document.getElementById('sb-pending').textContent=3;
+  document.getElementById('sb-next-event').textContent='CY-223 @ 09:00';
+  setAPI('classroom',true);setAPI('calendar',true);
+}
+
+// ── CLASSROOM ──
+async function loadClassroom(){
+  if(!accessToken)return;
+  try{
+    const d=await(await fetch('https://classroom.googleapis.com/v1/courses?courseStates=ACTIVE',
+      {headers:{Authorization:'Bearer '+accessToken}})).json();
+    const courses=d.courses||[];
+    renderCourses(courses);
+    document.getElementById('sb-courses').textContent=courses.length;
+    document.getElementById('classroom-banner').style.display='none';
+    setAPI('classroom',true);
+    let all=[];
+    for(const c of courses.slice(0,5)){
+      const wd=await(await fetch(`https://classroom.googleapis.com/v1/courses/${c.id}/courseWork`,
+        {headers:{Authorization:'Bearer '+accessToken}})).json();
+      if(wd.courseWork) all.push(...wd.courseWork.map(w=>({
+        title:w.title,course:c.name,status:'due',
+        due:w.dueDate?`${w.dueDate.year}-${String(w.dueDate.month).padStart(2,'0')}-${String(w.dueDate.day).padStart(2,'0')}`:'No due date'
+      })));
+    }
+    renderAssignments(all.slice(0,6));
+    document.getElementById('sb-pending').textContent=all.length;
+  }catch(e){
+    document.getElementById('courses-list').innerHTML='<div style="font-size:0.63rem;color:var(--magenta)">// Classroom API error.</div>';
+  }
+}
+
+// ── CALENDAR ──
+async function loadCalendar(){
+  if(!accessToken)return;
+  try{
+    const now=new Date().toISOString(),end=new Date(Date.now()+7*864e5).toISOString();
+    const d=await(await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${now}&timeMax=${end}&singleEvents=true&orderBy=startTime&maxResults=10`,
+      {headers:{Authorization:'Bearer '+accessToken}})).json();
+    const evs=(d.items||[]).map(e=>({
+      summary:e.summary,cal:'Google Calendar',color:'#00f5ff',
+      start:e.start.dateTime?new Date(e.start.dateTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):e.start.date
+    }));
+    renderEvents(evs);
+    calEvents=(d.items||[]).map(e=>new Date(e.start.dateTime||e.start.date).getDate());
+    renderCalendar(); setAPI('calendar',true);
+    if(evs.length) document.getElementById('sb-next-event').textContent=`${evs[0].summary} @ ${evs[0].start}`;
+  }catch(e){
+    document.getElementById('events-list').innerHTML='<div style="font-size:0.63rem;color:var(--magenta)">// Calendar API error.</div>';
+  }
+}
+
+// ── RENDERERS ──
+const CC=['#00f5ff','#ff006e','#39ff14','#ffe600','#b44aff','#ff6b35'];
+
+function renderCourses(cs){
+  const el=document.getElementById('courses-list');
+  document.getElementById('course-count-badge').textContent=cs.length+' COURSES';
+  if(!cs.length){el.innerHTML='<div class="no-events">No active courses found.</div>';return;}
+  el.innerHTML=cs.map((c,i)=>`
+    <div class="course-item" onclick="openCourse('${c.id||''}')">
+      <div class="c-dot" style="background:${CC[i%6]};box-shadow:0 0 6px ${CC[i%6]}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="c-name">${c.name}</div>
+        <div class="c-teach">${c.teacherGroupEmail||c.section||'Instructor'}</div>
+      </div>
+      <div class="c-badge">${c.courseState||'ACTIVE'}</div>
+    </div>`).join('');
+}
+
+function renderAssignments(as){
+  const el=document.getElementById('assignments-list');
+  document.getElementById('assign-badge').textContent=as.filter(a=>a.status!=='done').length+' PENDING';
+  if(!as.length){el.innerHTML='<div class="no-events">No assignments found.</div>';return;}
+  el.innerHTML=as.map(a=>{
+    const diff=Math.ceil((new Date(a.due)-new Date())/864e5);
+    const sc=a.status==='done'?'done':diff<=2?'due':'later';
+    return `<div class="assign-item">
+      <div class="a-led ${sc}"></div>
+      <div>
+        <div class="a-title">${a.title}</div>
+        <div class="a-due">${a.due!=='No due date'?'DUE '+a.due:'NO DEADLINE'}</div>
+        <div class="a-course">${a.course}</div>
+      </div></div>`;
+  }).join('');
+}
+
+function renderEvents(evs){
+  const el=document.getElementById('events-list');
+  document.getElementById('events-count-badge').textContent=evs.length;
+  if(!evs.length){el.innerHTML='<div class="no-events">No upcoming events.</div>';return;}
+  el.innerHTML=evs.map(e=>`
+    <div class="event-item">
+      <div class="ev-dot" style="background:${e.color};box-shadow:0 0 6px ${e.color}"></div>
+      <div class="ev-time">${e.start}</div>
+      <div><div class="ev-name">${e.summary}</div><div class="ev-cal">${e.cal}</div></div>
+    </div>`).join('');
+}
+
+// ── CALENDAR WIDGET ──
+const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+const DNAMES=['SU','MO','TU','WE','TH','FR','SA'];
+function changeMonth(d){calViewDate.setMonth(calViewDate.getMonth()+d);renderCalendar();}
+function renderCalendar(){
+  const t=new Date(),y=calViewDate.getFullYear(),m=calViewDate.getMonth();
+  document.getElementById('cal-month-label').textContent=MONTHS[m]+' '+y;
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+  let h=DNAMES.map(d=>`<div class="cal-head">${d}</div>`).join('');
+  for(let i=0;i<first;i++) h+='<div class="cal-day empty"></div>';
+  for(let d=1;d<=days;d++){
+    const iT=(d===t.getDate()&&m===t.getMonth()&&y===t.getFullYear());
+    const hE=calEvents.includes(d);
+    h+=`<div class="cal-day${iT?' today':''}${hE?' has-event':''}">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=h;
+}
+
+// ── CLOCK ──
+function startClock(){
+  function tick(){
+    const n=new Date();
+    document.getElementById('ct-h').textContent=String(n.getHours()).padStart(2,'0');
+    document.getElementById('ct-m').textContent=String(n.getMinutes()).padStart(2,'0');
+    document.getElementById('ct-s').textContent=String(n.getSeconds()).padStart(2,'0');
+    document.getElementById('clock-date').textContent=n.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase();
+    document.getElementById('clock-day').textContent=n.toLocaleDateString('en-US',{weekday:'long'}).toUpperCase();
+    document.getElementById('status-time').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  }
+  tick();setInterval(tick,1000);
+}
+function startSessionTimer(){
+  setInterval(()=>{
+    const e=Math.floor((Date.now()-sessionStart)/1000);
+    document.getElementById('stat-session').textContent=String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+    document.getElementById('fill-session').style.width=Math.min(100,(e/3600)*100)+'%';
+  },1000);
+}
+
+// ── WEATHER ──
+async function loadWeather(){
+  try{
+    const d=await(await fetch('https://api.open-meteo.com/v1/forecast?latitude=33.6844&longitude=73.0479&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&temperature_unit=celsius')).json();
+    const c=d.current;
+    document.getElementById('weather-content').innerHTML=`
+      <div class="weather-main">
+        <div class="w-icon">${wIcon(c.weather_code)}</div>
+        <div>
+          <div class="w-temp">${Math.round(c.temperature_2m)}°C</div>
+          <div class="w-desc">${wDesc(c.weather_code)}</div>
+          <div class="w-city">// Islamabad, PK</div>
+        </div>
+      </div>
+      <div class="w-stats">
+        <div class="ws">HUMIDITY<span>${c.relative_humidity_2m}%</span></div>
+        <div class="ws">WIND<span>${Math.round(c.wind_speed_10m)} km/h</span></div>
+      </div>`;
+  }catch(e){
+    document.getElementById('weather-content').innerHTML='<div style="font-size:0.63rem;color:var(--dim)">// Weather uplink unavailable.</div>';
+  }
+}
+const wIcon=c=>c===0?'☀️':c<=3?'⛅':c<=49?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':'⛈️';
+const wDesc=c=>c===0?'CLEAR SKY':c<=3?'PARTLY CLOUDY':c<=49?'FOG / HAZE':c<=67?'RAIN':c<=77?'SNOW':c<=82?'SHOWERS':'THUNDERSTORM';
+
+// ── NOTES ──
+function loadNotes(){
+  const s=localStorage.getItem('awad-nexus-notes');
+  if(s) document.getElementById('notes-area').value=s;
+  document.getElementById('notes-area').addEventListener('input',e=>localStorage.setItem('awad-nexus-notes',e.target.value));
+}
+function clearNotes(){
+  if(confirm('Purge all notes?')){document.getElementById('notes-area').value='';localStorage.removeItem('awad-nexus-notes');}
+}
+
+// ── QUOTE ──
+function loadQuote(){
+  const q=QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  document.getElementById('quote-text').textContent=q[0];
+  document.getElementById('quote-author').textContent='// '+q[1].toUpperCase();
+}
+
+// ── STATUS ──
+function setAPI(svc,on){
+  document.getElementById('stat-'+svc).textContent=on?'ONLINE':'OFFLINE';
+  document.getElementById('stat-'+svc).style.color=on?'var(--green)':'var(--dim)';
+  document.getElementById('fill-'+svc).style.width=on?'100%':'0%';
+}
+function openCourse(id){if(id)window.open(`https://classroom.google.com/c/${id}`,'_blank');}
+
+// ── INIT ──
+document.getElementById('email-input').addEventListener('keydown',e=>{if(e.key==='Enter')initiateGoogleLogin();});
+</script>
+</body>
+</html>
